@@ -56,19 +56,25 @@ app.post('/user/login',function (req,res) {
 })
 //个人中心
 app.get("/user/center",function(req,res){
-
+    let value2
+    for (let [key,value] of Object.entries(req.query)){
+        value2 =  value
+    }
+ connection.query(`select *from p_users where user_id = ${value2}`,function (error,require,fields) {
+     res.send(require)
+ })
 })
 
 //用户列表
 app.get('/user/list',(req,res)=>{
-    connection.query(`select * from p_users limit 10`,function (error,require,fields) {
+    connection.query(`select * from p_users  where is_delete = 0  limit 5 `,function (error,require,fields) {
         if (require){
             let response={
                 "error":0,
                 "msg":"ok",
                 "data":{ require }
             }
-            res.send(require)
+             res.send(require)
         }else {
             let response={
                 "error":4001,
@@ -79,15 +85,68 @@ app.get('/user/list',(req,res)=>{
             }
             res.send(response)
         }
+
     })
 
 
 
 })
 
+//用户注册
+app.post('/user/update',(req,res)=>{
+    let user_id = req.body.user_id
+    let user_name = req.body.user_name
+    let email = req.body.email
+    let mobile = req.body.mobile
+    connection.query(`update p_users set user_name='${user_name}',email='${email}',mobile='${mobile}' where user_id=${user_id}`,function(err,result){
+           if (result){
+               res.send({
+                   errno: 0,
+                   msg: 'ok'
+               })
+           }   else{
+              console.log(`update p_users set user_name='${user_name}',email='${email}',mobile='${mobile}' where user_id=${user_id}`)
+           }
+
+    })
+
+})
+
+
+
+
+
+
 app.get('/', (req, res) => {
     res.send()
 })
+// 删除用户
+app.get('/user/delete',function (req,res) {
+let uid =req.query.uid
+   let sql =`update p_users set  is_delete =1  where user_id =`+uid
+    connection.query(sql,function(error,result){
+        console.log(sql)
+        console.log(result)
+        if(result){
+            res.send({
+                errno: 0,
+                msg: "OK"
+            })
+        }else{
+            res.send({
+                errno: 50001,
+                msg: "删除失败"
+            })
+        }
+    })
+})
+
+
+
+
+
+
+
 
 // 用户注册
 app.post('/user/reg',function(req,res){
